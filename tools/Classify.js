@@ -4,7 +4,7 @@ const fs = require("fs");
 const classTmpl = fs.readFileSync("./templates/Class.json", "utf-8").toString();
 const methodTmpl = fs.readFileSync("./templates/Method.json", "utf-8").toString();
 
-// TODO: Support static methods, Remove _createClass from constructor
+// TODO: Remove _createClass from constructor
 
 /**
  * Classify babelized class
@@ -123,6 +123,12 @@ class Classify {
         let instanceMethods = this.methods[1];
         let staticMethods = this.methods[2];
 
+        if (staticMethods && staticMethods.elements !== undefined) {
+            for (let m of staticMethods.elements) {
+                this.insertMethod(_class, m, true);
+            }
+        }
+
         if (instanceMethods && instanceMethods.elements !== undefined) {
             for (let m of instanceMethods.elements) {
                 this.insertMethod(_class, m);
@@ -147,9 +153,10 @@ class Classify {
      * Add a method into class tree
      * @param {Node} _class class object
      * @param {Node} m method object
+     * @param {boolean} isStatic true if it is a static method
      * @param {number} propIndex option: property index
      */
-    insertMethod(_class, m, propIndex) {
+    insertMethod(_class, m, isStatic, propIndex) {
         let _method = JSON.parse(methodTmpl);
 
         _method.key.name = m.properties[0].value.value; // method name
@@ -159,11 +166,13 @@ class Classify {
             _method.kind = m.properties[propIndex || 1].key.name;
         }
 
+        if (isStatic) _method.static = true;
+
         _class.body.body.push(_method);
 
         // check one more
         if (propIndex != 2 && m.properties[2]) {
-            this.insertMethod(_class, m, 2);
+            this.insertMethod(_class, m, isStatic, 2);
         }
     }
 
