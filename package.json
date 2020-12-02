@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "classify"
+    "url": "https://github.com/LostMyCode/classify.git"
   },
   "author": "LostMyCode",
   "license": "MIT",
