@@ -3,6 +3,7 @@ const fs = require("fs");
 
 const classTmpl = fs.readFileSync("./templates/Class.json", "utf-8").toString();
 const methodTmpl = fs.readFileSync("./templates/Method.json", "utf-8").toString();
+const functionReturnTmpl = fs.readFileSync("./templates/FunctionReturn.json", "utf-8").toString();
 
 // TODO: Remove _createClass from constructor
 
@@ -123,12 +124,14 @@ class Classify {
         let instanceMethods = this.methods[1];
         let staticMethods = this.methods[2];
 
+        // ? insert static methods
         if (staticMethods && staticMethods.elements !== undefined) {
             for (let m of staticMethods.elements) {
                 this.insertMethod(_class, m, true);
             }
         }
 
+        // ? insert instance methods
         if (instanceMethods && instanceMethods.elements !== undefined) {
             for (let m of instanceMethods.elements) {
                 this.insertMethod(_class, m);
@@ -164,6 +167,13 @@ class Classify {
 
         if (["set", "get"].includes(m.properties[propIndex || 1].key.name)) {
             _method.kind = m.properties[propIndex || 1].key.name;
+        }
+
+        // ? avoid error when method format is like: get: () => blabla
+        if (_method.value.type == "ArrowFunctionExpression") {
+            let _return = JSON.parse(functionReturnTmpl);
+            _return.body.body[0].argument = _method.value.body;
+            _method.value = _return;
         }
 
         if (isStatic) _method.static = true;
