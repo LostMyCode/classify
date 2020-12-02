@@ -1,5 +1,5 @@
 {
-  "type": "FunctionDeclaration",
+  "type": "FunctionExpression",
   "id": {
     "type": "Identifier",
     "name": ""
