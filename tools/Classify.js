@@ -5,8 +5,6 @@ const classTmpl = fs.readFileSync("./templates/Class.json", "utf-8").toString();
 const methodTmpl = fs.readFileSync("./templates/Method.json", "utf-8").toString();
 const functionReturnTmpl = fs.readFileSync("./templates/FunctionReturn.json", "utf-8").toString();
 
-// TODO: Remove _createClass from constructor
-
 /**
  * Classify babelized class
  */
@@ -117,6 +115,7 @@ class Classify {
 
         let Blocks = this.blocks;
 
+        this.deleteClassCallCheck();
         let _constructor = this._constructor;
         _class.body.body[0].value.params = _constructor.params;
         _class.body.body[0].value.body = _constructor.body;
@@ -192,6 +191,41 @@ class Classify {
                 "type": "Identifier",
                 "name": this.superClassName
             };
+        }
+    }
+
+    /**
+     * Delete _classCallCheck call from class constructor
+     */
+    deleteClassCallCheck() {
+        const blocks = this._constructor.body.body;
+        const constractorName = this._constructor.id.name;
+        for (let i = 0; i < blocks.length; i++) {
+            let block = blocks[i];
+            if (block.type == "ExpressionStatement") {
+                let expressions;
+                let hasMultipleExps = false;
+
+                if (block.expression.expressions) {
+                    expressions = block.expression.expressions;
+                    hasMultipleExps = true;
+                } else {
+                    expressions = [block.expression];
+                }
+
+                for (let j = 0; j < expressions.length; j++) {
+                    if (
+                        expressions[j].type == "CallExpression" &&
+                        expressions[j].arguments &&
+                        expressions[j].arguments[0].type == "ThisExpression" &&
+                        expressions[j].arguments[1].name == constractorName
+                    ) {
+                        if (hasMultipleExps) expressions.splice(j, 1);
+                        else blocks.splice(i, 1);
+                        return;
+                    }
+                }
+            }
         }
     }
 }
