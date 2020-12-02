@@ -5,7 +5,7 @@
   "computed": false,
   "key": {
     "type": "Identifier",
-    "name": "pakopako"
+    "name": ""
   },
   "value": {
     "type": "FunctionExpression",
@@ -16,31 +16,7 @@
     "params": [],
     "body": {
       "type": "BlockStatement",
-      "body": [
-        {
-          "type": "ExpressionStatement",
-          "expression": {
-            "type": "AssignmentExpression",
-            "operator": "=",
-            "left": {
-              "type": "MemberExpression",
-              "object": {
-                "type": "ThisExpression"
-              },
-              "property": {
-                "type": "Identifier",
-                "name": "aaa"
-              },
-              "computed": false
-            },
-            "right": {
-              "type": "Literal",
-              "value": 114514,
-              "raw": "114514"
-            }
-          }
-        }
-      ]
+      "body": []
     }
   }
 }
