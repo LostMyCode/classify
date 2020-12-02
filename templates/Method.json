@@ -1,0 +1,46 @@
+{
+  "type": "MethodDefinition",
+  "kind": "method",
+  "static": false,
+  "computed": false,
+  "key": {
+    "type": "Identifier",
+    "name": "pakopako"
+  },
+  "value": {
+    "type": "FunctionExpression",
+    "id": null,
+    "expression": false,
+    "generator": false,
+    "async": false,
+    "params": [],
+    "body": {
+      "type": "BlockStatement",
+      "body": [
+        {
+          "type": "ExpressionStatement",
+          "expression": {
+            "type": "AssignmentExpression",
+            "operator": "=",
+            "left": {
+              "type": "MemberExpression",
+              "object": {
+                "type": "ThisExpression"
+              },
+              "property": {
+                "type": "Identifier",
+                "name": "aaa"
+              },
+              "computed": false
+            },
+            "right": {
+              "type": "Literal",
+              "value": 114514,
+              "raw": "114514"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

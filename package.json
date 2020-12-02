@@ -1,0 +1,20 @@
+{
+  "name": "classify",
+  "version": "1.0.0",
+  "description": "A tool for converting babelized classes into ES6 class syntax",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "classify"
+  },
+  "author": "LostMyCode",
+  "license": "MIT",
+  "devDependencies": {
+    "acorn": "^8.0.4",
+    "escodegen": "^2.0.0",
+    "estraverse": "^5.2.0"
+  }
+}

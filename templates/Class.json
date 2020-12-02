@@ -1,0 +1,59 @@
+{
+  "type": "ClassDeclaration",
+  "id": {
+    "type": "Identifier",
+    "name": ""
+  },
+  "superClass": null,
+  "body": {
+    "type": "ClassBody",
+    "body": [
+      {
+        "type": "MethodDefinition",
+        "kind": "constructor",
+        "static": false,
+        "computed": false,
+        "key": {
+          "type": "Identifier",
+          "name": "constructor"
+        },
+        "value": {
+          "type": "FunctionExpression",
+          "id": null,
+          "expression": false,
+          "generator": false,
+          "async": false,
+          "params": [],
+          "body": {
+            "type": "BlockStatement",
+            "body": [
+              {
+                "type": "ExpressionStatement",
+                "expression": {
+                  "type": "AssignmentExpression",
+                  "operator": "=",
+                  "left": {
+                    "type": "MemberExpression",
+                    "object": {
+                      "type": "ThisExpression"
+                    },
+                    "property": {
+                      "type": "Identifier",
+                      "name": "bbb"
+                    },
+                    "computed": false
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": "ad",
+                    "raw": "\"ad\""
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
