@@ -1,9 +1,9 @@
 const estraverse = require("estraverse");
 const fs = require("fs");
+const MethodBuilder = require("./ClassMethodBuilder");
 
-const classTmpl = fs.readFileSync("./templates/Class.json", "utf-8").toString();
-const methodTmpl = fs.readFileSync("./templates/Method.json", "utf-8").toString();
-const functionReturnTmpl = fs.readFileSync("./templates/FunctionReturn.json", "utf-8").toString();
+const classTmpl = fs.readFileSync("./templates/Class.json", "utf-8");
+const functionReturnTmpl = fs.readFileSync("./templates/FunctionReturn.json", "utf-8");
 
 /**
  * Classify babelized class
@@ -159,25 +159,25 @@ class Classify {
      * @param {number} propIndex option: property index
      */
     insertMethod(_class, m, isStatic, propIndex) {
-        let _method = JSON.parse(methodTmpl);
+        const method = new MethodBuilder();
 
-        _method.key.name = m.properties[0].value.value; // method name
-        _method.value = m.properties[propIndex || 1].value; // method (func)
+        // method inner data
+        const inner = m.properties[propIndex || 1];
 
-        if (["set", "get"].includes(m.properties[propIndex || 1].key.name)) {
-            _method.kind = m.properties[propIndex || 1].key.name;
-        }
+        method.name = m.properties[0].value.value; // method name
+        method.value = inner.value; // method value
+        method.kind = inner.key.name; // normal? getter? setter?
 
         // ? avoid error when method format is like: get: () => blabla
-        if (_method.value.type == "ArrowFunctionExpression") {
+        if (inner.value.type == "ArrowFunctionExpression") {
             let _return = JSON.parse(functionReturnTmpl);
-            _return.body.body[0].argument = _method.value.body;
-            _method.value = _return;
+            _return.body.body[0].argument = inner.value.body;
+            method.value = _return;
         }
 
-        if (isStatic) _method.static = true;
+        if (isStatic) method.static = isStatic;
 
-        _class.body.body.push(_method);
+        _class.body.body.push(method.getTree());
 
         // check one more
         if (propIndex != 2 && m.properties[2]) {
