@@ -2,16 +2,17 @@ const fs = require("fs");
 const acorn = require("acorn");
 const escodegen = require("escodegen");
 const estraverse = require("estraverse");
-
+const JsonFormat = require("json-format");
 const Classify = require("./tools/Classify");
 
 let input = fs.readFileSync("./input.js", "utf-8").toString();
+let ast = acorn.parse(input, { ecmaVersion: 8 });
 
-let parsed = acorn.parse(input, { ecmaVersion: 8 });
+fs.writeFileSync("./parse.json", JsonFormat(ast, {
+    type: 'space',
+    size: 1
+}), "utf-8");
 
-fs.writeFileSync("./parse.json", JSON.stringify(parsed), "utf-8");
-
-let aaa = Classify(parsed);
-
-let output = escodegen.generate(aaa);
+let classifiedAst = Classify(ast);
+let output = escodegen.generate(classifiedAst);
 fs.writeFileSync("./output.js", output);
