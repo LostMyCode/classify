@@ -1,8 +1,8 @@
 const estraverse = require("estraverse");
 const fs = require("fs");
+const ClassBuilder = require("./ClassBuilder");
 const MethodBuilder = require("./ClassMethodBuilder");
 
-const classTmpl = fs.readFileSync("./templates/Class.json", "utf-8");
 const functionReturnTmpl = fs.readFileSync("./templates/FunctionReturn.json", "utf-8");
 
 /**
@@ -111,14 +111,10 @@ class Classify {
     }
 
     classifyNode(node) {
-        let _class = JSON.parse(classTmpl);
-
-        let Blocks = this.blocks;
+        const _class = new ClassBuilder();
 
         this.deleteClassCallCheck();
-        let _constructor = this._constructor;
-        _class.body.body[0].value.params = _constructor.params;
-        _class.body.body[0].value.body = _constructor.body;
+        _class.setConstructor(this._constructor);
 
         let instanceMethods = this.methods[1];
         let staticMethods = this.methods[2];
@@ -138,12 +134,12 @@ class Classify {
         }
 
         if (node.type == "NewExpression") {
-            node.callee = _class;
+            node.callee = _class.getTree();
             node.callee.type = "ClassExpression";
             this.insertSuperClass(node.callee);
         } else {
             // ! need to remove }'()';
-            node.body = _class.body;
+            node.body = _class.getTree().body;
             node.type = "ClassExpression";
             this.insertSuperClass(node);
         }
@@ -153,7 +149,7 @@ class Classify {
 
     /**
      * Add a method into class tree
-     * @param {Node} _class class object
+     * @param {ClassBuilder} _class class builder instance
      * @param {Node} m method object
      * @param {boolean} isStatic true if it is a static method
      * @param {number} propIndex option: property index
@@ -177,7 +173,7 @@ class Classify {
 
         if (isStatic) method.static = isStatic;
 
-        _class.body.body.push(method.getTree());
+        _class.addMethod(method.getTree());
 
         // check one more
         if (propIndex != 2 && m.properties[2]) {
