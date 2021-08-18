@@ -47,7 +47,7 @@ class Classify {
                                 // ? return _createClass(e, [{...
                                 n = n.argument;
                                 if (n.type == "SequenceExpression") {
-                                    res = this.searchCreateClass(n.expressions[0]);
+                                    res = this.searchCreateClass(n.expressions[0], n.expressions);
                                 }
                                 break;
 
@@ -77,34 +77,71 @@ class Classify {
 
     }
 
-    searchCreateClass(node) {
-        if (node && node.type == "CallExpression" && [2, 3].includes(node.arguments.length)) { // _createClass(e, [] | null, [])
+    /**
+     * Methods array example:
+     * ```
+     *  [{
+     *      key: "method1",
+     *      value() {}
+     *  }, {
+     *      key: "method2",
+     *      value() {}
+     *  }]
+     * ```
+     * @param {Node} node 
+     * @returns {boolean} True if is methods array
+     */
+    isMethodsArray(node) {
+        if (node.type == "ArrayExpression") { // [instance methods], [static methods]
+            node = node.elements[0];
+            if (node.type == "ObjectExpression") {
 
-            this.methods = node.arguments;
+                node = node.properties;
+                if (node.length == 2 || node.length == 3) { // key(name) and value (func) pair | key, get and set
 
-            node = node.arguments[2] || node.arguments[1];
-            if (node.type == "ArrayExpression") { // [static methods], [instance methods]
+                    const keyName0 = node[0].key.name || node[0].key.value;
+                    const keyName1 = node[1].key.name || node[1].key.value;
+                    if (keyName0 == "key" && ["value", "set", "get"].includes(keyName1)) { // check key name
 
-                node = node.elements[0];
-                if (node.type == "ObjectExpression") {
-
-                    node = node.properties;
-                    if (node.length == 2 || node.length == 3) { // key(name) and value (func) pair | key, get and set
-
-                        const keyName0 = node[0].key.name || node[0].key.value;
-                        const keyName1 = node[1].key.name || node[1].key.value;
-                        if (keyName0 == "key" && ["value", "set", "get"].includes(keyName1)) { // check key name
-
-                            return true;
-
-                        }
+                        return true;
 
                     }
-
                 }
+            }
+        }
 
+        return false;
+    }
+
+    searchCreateClass(node, expressions) {
+        if (node) { 
+            // _createClass(e, [] | null, [])
+            if (node.type == "CallExpression" && [2, 3].includes(node.arguments.length)) {
+                this.methods = node.arguments;
+
+                node = node.arguments[2] || node.arguments[1];
+                return this.isMethodsArray(node);
             }
 
+            // t = e, i = [{ method }, { method }]
+            else if (
+                node.type === "AssignmentExpression" && 
+                expressions && expressions.length >= 3 &&
+                (
+                    expressions[1].type === "AssignmentExpression" ||
+                    expressions[2].type === "AssignmentExpression"
+                )
+            ) {
+                if (
+                    // can be static methods
+                    this.isMethodsArray(expressions[1].right) || 
+                    // can be instance methods
+                    this.isMethodsArray(expressions[2].right)
+                ) {
+                    this.methods = [null, expressions[2].right, expressions[1].right];
+                    return true;
+                }
+            }
         }
 
         return false;
