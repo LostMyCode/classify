@@ -1,0 +1,21 @@
+[TYPES]
+
+"AssignmentExpression"
+
+    "="
+
+    Node example:
+    Node {
+        type: 'AssignmentExpression',
+        start: 222,
+        end: 227,
+        operator: '=',
+        left: Node { type: 'Identifier', start: 222, end: 223, name: 't' },
+        right: Node { type: 'Identifier', start: 226, end: 227, name: 'e' }
+    }
+
+"ArrayExpression"
+
+    "[]"
+
+    
