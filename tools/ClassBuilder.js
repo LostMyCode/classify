@@ -12,6 +12,10 @@ class ClassBuilder {
         this._class.body.body[0].value.body = _constructor.body;
     }
 
+    removeConstructor() {
+        this._class.body.body.splice(0, 1);
+    }
+
     /**
      * Add a method to class
      * @param {Node} method Method AST

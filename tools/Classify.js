@@ -170,6 +170,10 @@ class Classify {
             }
         }
 
+        if (!instanceMethods || (instanceMethods && instanceMethods.elements === undefined)) {
+            _class.removeConstructor();
+        }
+
         if (node.type == "NewExpression") {
             node.callee = _class.getTree();
             node.callee.type = "ClassExpression";
