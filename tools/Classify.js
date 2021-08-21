@@ -20,6 +20,7 @@ class Classify {
     }
 
     detect(node, parent) {
+        this.replaceSeq(node);
         this.root = node;
 
         if (["CallExpression", "NewExpression"].includes(node.type)) {
@@ -78,6 +79,52 @@ class Classify {
     }
 
     /**
+     *  Beautify sequences in block statement 
+     * 
+     *  Before
+     *  ```
+     *  function test() {
+     *     this.test1 = 123, this.test2 = 456; 
+     *  }
+     *  ```
+     * 
+     *  After
+     *  ```
+     *  function test() {
+     *      this.test1 = 123;
+     *      this.test2 = 456;
+     *  }
+     *  ```
+     * @param {Node} node 
+     * @returns Replaced node
+     */
+    replaceSeq(node) {
+        if (
+            node.type === "BlockStatement"
+        ) {
+            let beautifiedBody = [];
+            node.body.forEach(n => {
+                if (
+                    n.type === "ExpressionStatement" &&
+                    n.expression.type === "SequenceExpression"
+                ) {
+                    const exps = n.expression.expressions;
+                    exps.forEach(exp => {
+                        beautifiedBody.push({
+                            type: "ExpressionStatement",
+                            expression: exp
+                        });
+                    });
+                } else {
+                    beautifiedBody.push(n);
+                }
+            });
+            node.body = beautifiedBody;
+        }
+        return node;
+    }
+
+    /**
      * Methods array example:
      * ```
      *  [{
@@ -114,7 +161,7 @@ class Classify {
     }
 
     searchCreateClass(node, expressions) {
-        if (node) { 
+        if (node) {
             // _createClass(e, [] | null, [])
             if (node.type == "CallExpression" && [2, 3].includes(node.arguments.length)) {
                 this.methods = node.arguments;
@@ -125,7 +172,7 @@ class Classify {
 
             // t = e, i = [{ method }, { method }]
             else if (
-                node.type === "AssignmentExpression" && 
+                node.type === "AssignmentExpression" &&
                 expressions && expressions.length >= 3 &&
                 (
                     expressions[1].type === "AssignmentExpression" ||
@@ -134,7 +181,7 @@ class Classify {
             ) {
                 if (
                     // can be static methods
-                    this.isMethodsArray(expressions[1].right) || 
+                    this.isMethodsArray(expressions[1].right) ||
                     // can be instance methods
                     this.isMethodsArray(expressions[2].right)
                 ) {
