@@ -21,6 +21,7 @@ class Classify {
 
     detect(node, parent) {
         this.replaceSeq(node);
+        this.replaceConditionsToIf(node, parent);
         this.root = node;
 
         if (["CallExpression", "NewExpression"].includes(node.type)) {
@@ -76,6 +77,83 @@ class Classify {
 
         }
 
+    }
+
+    /**
+     *  Replace `con ? 1 : 2` into if statement (experiment)
+     * 
+     *  Before
+     *  ```
+     *  con ? (b(), a = 1) : (a = 2)
+     *  ```
+     * 
+     *  After
+     *  ```
+     *  if (con) {
+     *      b();
+     *      a = 1;
+     *  } else {
+     *      a = 2;
+     *  }
+     *  ```
+     * @param {Node} node 
+     * @param {Node} parent Parent node
+     * @returns Replaced node
+     */
+    replaceConditionsToIf(node, parent) {
+        if (
+            parent.isUnreplaceable ||
+            parent.type === "ReturnStatement" ||  // return con ? 1 : 2;
+            parent.type === "VariableDeclarator" || // var a = con ? 1 : 2;
+            parent.type === "AssignmentExpression" // left = con ? 1 : 2;
+        ) {
+            node.isUnreplaceable = true;
+        }
+
+        if (
+            node.type === "ConditionalExpression" &&
+            !node.isUnreplaceable &&
+            parent.type !== "TemplateLiteral" && // `${con ? 1 : 2}`
+            parent.type !== "CallExpression" && // func(con ? 1 : 2);
+            parent.type !== "SequenceExpression" &&  // (f(), con ? a : b)
+            parent.type !== "LogicalExpression" // like con && (con2 ? a : b)
+        ) {
+            // console.log(parent);
+            node.type = "IfStatement"
+
+            const targets = ["consequent", "alternate"]
+            targets.forEach(target => {
+                if (node[target].type === "SequenceExpression") {
+                    node[target] = {
+                        type: "BlockStatement",
+                        body: node[target].expressions.map(exp => {
+                            return {
+                                type: "ExpressionStatement",
+                                expression: exp
+                            }
+                        })
+                    }
+                } else if (node[target].type === "ConditionalExpression") {
+                    /* 
+                        dont nest with block statement to avoid thing like below
+                        if (a) { some }
+                        else {
+                            if (b) { some }
+                        }
+                     */
+                } else {
+                    node[target] = {
+                        type: "BlockStatement",
+                        body: [{
+                            type: "ExpressionStatement",
+                            expression: node[target]
+                        }]
+                    }
+                }
+            });
+        }
+
+        return node;
     }
 
     /**
